@@ -27,6 +27,9 @@ export function elName(id) {
 
 // ---- Màn hình tạo nhân vật ----
 export function showCreation(onDone) {
+  // Ẩn màn hình loading (#fade z-index 50 đè lên overlay tạo nhân vật z-index 40)
+  const fade = document.getElementById('fade');
+  if (fade) { fade.style.opacity = '0'; fade.style.pointerEvents = 'none'; }
   const ov = el('div', 'overlay');
   ov.innerHTML = `
     <div class="card">
