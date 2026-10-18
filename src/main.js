@@ -1,5 +1,5 @@
 import { loadData } from './game/data.js';
-import { newState, loadState, saveState, applyOffline } from './game/state.js';
+import { newState, loadState, saveState, applyOffline, setSaveUser } from './game/state.js';
 import { linhKhiPerSec } from './game/cultivation.js';
 import { battleTick } from './game/battle.js';
 import { ensureDaily } from './game/quests.js';
@@ -13,6 +13,7 @@ import { createRenderer } from './core/renderer.js';
 import { startLoop } from './core/loop.js';
 import { buildWorld } from './world/scene.js';
 import { showCreation, createHUD, fmtNum, fmtTime } from './ui/hud.js';
+import { showAuth } from './ui/auth.js';
 import { createAudio } from './audio/ambient.js';
 
 function bootError(err) {
@@ -23,24 +24,61 @@ function bootError(err) {
 }
 
 async function boot() {
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const setLoad = (pct, status) => {
+    const bar = document.getElementById('loadbar');
+    const st = document.getElementById('loadstatus');
+    if (bar) bar.style.width = pct + '%';
+    if (st && status) st.textContent = status;
+  };
+  // Mẹo xoay vòng lúc loading
+  const TIPS = [
+    '<b>Mẹo:</b> công pháp đúng hệ linh căn đạt hiệu quả 100%.',
+    'Mỗi 10 ải có <b>Boss</b> — hạ Boss rớt pháp bảo.',
+    '<b>Trúc Cơ Đan</b> tăng 15% tỉ lệ vượt thiên kiếp.',
+    '<b>Độ Ách Đan</b> miễn tổn thất khi độ kiếp thất bại.',
+    'Tu vi vẫn tăng khi thoát game <b>(tối đa 8 giờ)</b>.',
+    'Nhiệm vụ hằng ngày <b>reset lúc 5h sáng</b>.',
+  ];
+  const tipEl = document.getElementById('loadtip');
+  if (tipEl) tipEl.innerHTML = TIPS[0];
+  let tipI = 0;
+  const tipTimer = setInterval(() => {
+    const t = document.getElementById('loadtip');
+    if (!t) { clearInterval(tipTimer); return; }
+    tipI = (tipI + 1) % TIPS.length;
+    t.innerHTML = TIPS[tipI];
+  }, 2200);
+
+  setLoad(12, 'Đang tải dữ liệu tu tiên…');
   const DATA = await loadData();
+  setLoad(42, 'Đang dựng tiên cảnh…');
   const rc = createRenderer(document.getElementById('app'));
   const world = buildWorld(rc);
   world.setPreset(rc.setPreset(rc.presetName()));
   const audio = createAudio();
+  setLoad(78, 'Đang dẫn khí nhập thể…');
+  await sleep(800);
+  setLoad(100, 'Hoàn tất!');
+  await sleep(450);
+  clearInterval(tipTimer);
 
-  let state = loadState();
-  if (state) {
-    const off = applyOffline(state, (s) => linhKhiPerSec(s, DATA));
-    startGame(state, off.gain > 1 ? off : null);
-  } else {
-    showCreation((linhCan, name) => {
-      audio.unlock();
-      const s = newState(linhCan, name);
-      saveState(s);
-      startGame(s, null);
-    });
-  }
+  // Màn hình tài khoản (frontend-only, backend sau)
+  showAuth((user) => {
+    setSaveUser(user.name);
+    let state = loadState();
+    if (state) {
+      const off = applyOffline(state, (s) => linhKhiPerSec(s, DATA));
+      startGame(state, off.gain > 1 ? off : null);
+    } else {
+      showCreation((linhCan, name) => {
+        audio.unlock();
+        const s = newState(linhCan, name);
+        saveState(s);
+        startGame(s, null);
+      });
+    }
+  });
 
   function startGame(s, off) {
     world.setElement(s.linhCan);

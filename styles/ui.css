@@ -284,3 +284,21 @@ body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; color: var
 #b-maps .map-chip .hanzi { color: var(--gold); font-size: 13px; }
 #b-maps .map-chip.cur { border-color: var(--gold); background: rgba(212,175,55,0.14); box-shadow: 0 0 12px rgba(212,175,55,0.4); }
 #b-maps .map-chip:disabled { opacity: 0.4; }
+
+/* ---- Đăng nhập / đăng ký / khách ---- */
+.auth-card { max-height: 92vh; overflow-y: auto; }
+.auth-logo { font-size: 54px; animation: spin 9s linear infinite;
+  filter: drop-shadow(0 0 16px rgba(212,175,55,0.7)); }
+.auth-card h1 { letter-spacing: 8px; }
+.auth-tabs { display: flex; gap: 8px; margin: 14px 0 12px; }
+.auth-tabs button { flex: 1; padding: 10px; border-radius: 12px; cursor: pointer;
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(212,175,55,0.3);
+  color: var(--muted); font: 600 14px system-ui, sans-serif; }
+.auth-tabs button.on { background: rgba(212,175,55,0.16); border-color: var(--gold); color: #ffe9a8; }
+.auth-card input { margin-bottom: 10px; }
+.auth-err { color: #ff9a9a; font-size: 13px; min-height: 20px; margin: 2px 0 6px; }
+.auth-div { display: flex; align-items: center; gap: 12px; margin: 14px 0; color: var(--muted); font-size: 13px; }
+.auth-div::before, .auth-div::after { content: ''; flex: 1; height: 1px; background: rgba(212,175,55,0.3); }
+.auth-note { color: var(--muted); font-size: 12px; line-height: 1.7; margin: 12px 0 0; }
+#auth-quick { margin-top: 4px; }
+#auth-quick b { color: #1a1408; }

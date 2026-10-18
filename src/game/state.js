@@ -5,6 +5,11 @@ const V = 2;
 const OFFLINE_CAP = 8 * 3600; // tối đa 8h offline
 const OFFLINE_EFF = 0.5; // hiệu suất offline 50%
 
+// Tài khoản hiện tại (null = khách). Mỗi tài khoản một save riêng.
+let saveUser = null;
+export function setSaveUser(name) { saveUser = name || null; }
+function key() { return saveUser ? `${KEY}:${saveUser}` : KEY; }
+
 function defaults() {
   return {
     v: V,
@@ -51,7 +56,7 @@ function migrate(s) {
 
 export function loadState() {
   try {
-    const raw = localStorage.getItem(KEY);
+    const raw = localStorage.getItem(key());
     if (!raw) return null;
     return migrate(JSON.parse(raw));
   } catch {
@@ -62,7 +67,7 @@ export function loadState() {
 export function saveState(s) {
   try {
     s.lastSeen = Date.now();
-    localStorage.setItem(KEY, JSON.stringify(s));
+    localStorage.setItem(key(), JSON.stringify(s));
   } catch {
     /* bộ nhớ đầy / chế độ riêng tư: bỏ qua */
   }
