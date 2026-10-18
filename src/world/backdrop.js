@@ -1,4 +1,5 @@
-// Nền 2.5D: tranh AI (ngày/hoàng hôn/đêm) crossfade theo giờ thực + mây trôi 2 lớp.
+// Nền 2.5D: tranh AI theo FORM nhân vật × buổi trong ngày + mây trôi 2 lớp.
+// Form: phàm (Luyện Khí–Trúc Cơ) → linh (Kim Đan–Hóa Thần) → tiên (Luyện Hư–Phi Thăng).
 import { cloudTexture } from './textures.js';
 
 function hourNow() {
@@ -7,11 +8,19 @@ function hourNow() {
 }
 
 // đêm: 19-5, hoàng hôn: 5-7 & 17-19, ngày: 7-17
-function pickKey(h) {
+function pickTime(h) {
   if (h >= 19 || h < 5) return 'night';
   if (h < 7 || h >= 17) return 'sunset';
   return 'day';
 }
+
+function pickTier(realmIdx) {
+  if (realmIdx >= 5) return 'tien';
+  if (realmIdx >= 2) return 'linh';
+  return 'pham';
+}
+
+const src = (tier, time) => `./assets/bg-${tier}-${time}.jpg`;
 
 export function buildBackdrop() {
   const layers = {
@@ -19,7 +28,7 @@ export function buildBackdrop() {
     sunset: document.getElementById('bg-sunset'),
     night: document.getElementById('bg-night'),
   };
-  let cur = '';
+  let curTier = 'pham', curTime = '', realmIdx = 0;
 
   // Mây trôi: dùng cloud texture procedural làm background lặp ngang
   const drifts = [];
@@ -38,18 +47,57 @@ export function buildBackdrop() {
     drifts.push({ ...d, off: Math.random() * 800 });
   }
 
-  function apply() {
-    const k = pickKey(hourNow());
-    if (k === cur) return;
-    cur = k;
+  function showTime(time) {
+    curTime = time;
     for (const [key, img] of Object.entries(layers)) {
-      if (img) img.classList.toggle('on', key === k);
+      if (img) img.classList.toggle('on', key === time);
     }
+  }
+
+  // Đổi form: fade tối rồi hiện form mới (kịch tính như lột xác)
+  function applyTier(tier) {
+    if (tier === curTier) return;
+    curTier = tier;
+    const active = pickTime(hourNow());
+    for (const [t, img] of Object.entries(layers)) {
+      if (!img) continue;
+      img.classList.remove('on');
+      img.src = src(tier, t);
+    }
+    let shown = false;
+    const show = () => {
+      if (shown) return;
+      shown = true;
+      showTime(active);
+    };
+    const im = layers[active];
+    if (im) {
+      im.onload = show;
+      if (im.complete && im.naturalWidth) show();
+    }
+    setTimeout(show, 1600); // fallback nếu onload chậm
+  }
+
+  function apply() {
+    applyTier(pickTier(realmIdx));
+    const t = pickTime(hourNow());
+    if (t !== curTime) showTime(t);
   }
   apply();
 
   let t = 0;
   return {
+    // Trả về true nếu vừa đổi form (để main toast chúc mừng)
+    setRealm(i) {
+      const before = pickTier(realmIdx);
+      realmIdx = i;
+      const after = pickTier(i);
+      if (after !== before) {
+        applyTier(after);
+        return true;
+      }
+      return false;
+    },
     update(dt) {
       t += dt;
       if (Math.floor(t) % 20 === 0) apply(); // kiểm tra giờ mỗi ~20s

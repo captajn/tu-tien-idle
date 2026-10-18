@@ -147,6 +147,10 @@ async function boot() {
 
         world.update(dt, rate);
         hud.update(dt, rate);
+        // Đổi form nhân vật khi lên nhóm cảnh giới mới
+        if (world.setRealm(s.realmIdx)) {
+          hud.toast('🎆 Tiên thể lột xác — diện mạo mới!');
+        }
         saveT += dt;
         if (saveT > 10) { saveT = 0; saveState(s); }
       },

@@ -64,6 +64,10 @@ export function buildWorld(rc) {
       runeMat.color.set(c);
       aura.material.color.set(c);
     },
+    // Đổi form nhân vật theo cảnh giới — trả về true nếu vừa lột xác
+    setRealm(idx) {
+      return backdrop.setRealm(idx);
+    },
     setPreset(p) {
       parts.setCount(p.particles);
     },
