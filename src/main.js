@@ -48,6 +48,8 @@ async function boot() {
     if (off) {
       hud.toast(`Offline ${fmtTime(off.seconds)}: +${fmtNum(off.gain)} tu vi`);
     }
+    // Tân thủ chưa xem hướng dẫn: hiện sau 1.2s
+    if (!s.flags.tutorialDone) setTimeout(() => hud.startTutorial(), 1200);
     // Bảng xếp hạng online (best-effort)
     hud.onRankGo(async () => {
       if (!relayUrl()) {

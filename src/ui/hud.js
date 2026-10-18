@@ -61,32 +61,45 @@ export function showCreation(onDone) {
   };
 }
 
-// ---- HUD chính ----
+// ---- HUD chuẩn game: topbar avatar + tài nguyên, nav dưới, nút đột phá/độ kiếp ----
 export function createHUD({ DATA, state, world, audio, rc }) {
+  state.flags = state.flags || {};
   const root = el('div', '', '');
   root.id = 'hud';
   root.innerHTML = `
     <div id="topbar">
-      <div id="realm-badge"><b></b><small></small></div>
+      <div id="avatar"><img id="avatar-el" src="./assets/elements/${state.linhCan}.png" alt="linh căn">
+        <div><b></b><small></small></div></div>
       <div id="tuvi-wrap"><div id="tuvi-bar"><div id="tuvi-fill"></div></div><span id="tuvi-text"></span></div>
-      <div id="stats"><span id="stat-rate"></span><span id="stat-el"></span></div>
+      <div id="currencies"><span class="cur" id="c-rate"></span><span class="cur" id="c-stone"></span></div>
+    </div>
+    <div id="settings">
+      <button class="icon-btn" id="t-sound" title="Âm thanh">🔊</button>
+      <button class="icon-btn" id="t-quality" title="Chất lượng">✨</button>
     </div>
     <div id="toast"></div>
-    <button id="btn-bp" class="btn gold big"></button>
-    <div id="toolbar">
-      <button id="t-battle" class="btn">⚔️ Chiến đấu</button>
-      <button id="t-inv" class="btn">🎒 Túi đồ</button>
-      <button id="t-quest" class="btn">📜 Nhiệm vụ</button>
-      <button id="t-comp" class="btn">🐾 Đồng hành</button>
-      <button id="t-tech" class="btn">📖 Công pháp</button>
-      <button id="t-sound" class="btn">🔈 Tắt</button>
-      <button id="t-quality" class="btn"></button>
-    </div>
+    <button id="btn-bp"></button>
+    <nav id="navbar">
+      <button class="nav-btn" id="nav-battle"><span class="nav-ic">⚔️</span><span>Chiến đấu</span></button>
+      <button class="nav-btn" id="nav-tech"><span class="nav-ic">📖</span><span>Công pháp</span></button>
+      <button class="nav-btn" id="nav-inv"><span class="nav-ic">🎒</span><span>Túi đồ</span></button>
+      <button class="nav-btn" id="nav-quest"><span class="nav-ic">📜</span><span>Nhiệm vụ</span></button>
+      <button class="nav-btn" id="nav-comp"><span class="nav-ic">🐾</span><span>Đồng hành</span></button>
+    </nav>
     <div id="panel-tech" class="panel hidden"><div class="panel-head"><b>📖 Công pháp</b><button id="tech-close" class="btn small">Đóng</button></div><div id="tech-list"></div></div>
+    <div id="trib-cine" class="hidden">
+      <div class="trib-title">⚡ THIÊN KIẾP GIÁNG XUỐNG ⚡</div>
+      <div class="trib-sub"></div>
+      <div id="trib-result" class="hidden"></div>
+    </div>
+    <div id="tutorial" class="hidden"><div class="tut-card">
+      <h3 id="tut-title"></h3><p id="tut-text"></p>
+      <div class="tut-dots" id="tut-dots"></div>
+      <div class="tut-row"><button class="btn small" id="tut-skip">Bỏ qua</button><button class="btn gold" id="tut-next">Tiếp theo</button></div>
+    </div></div>
   `;
   document.body.appendChild(root);
 
-  // Panels mới
   const battleP = createBattlePanel({ DATA, state });
   const invP = createInventoryPanel({ DATA, state, toast: (m) => toast(m) });
   const questP = createQuestsPanel({ DATA, state, toast: (m) => toast(m) });
@@ -136,13 +149,20 @@ export function createHUD({ DATA, state, world, audio, rc }) {
     }
   }
 
-  // Quản lý panels: mở một, đóng còn lại
+  // Quản lý panels + nav active
   const panels = {
     tech: $('#panel-tech'),
     battle: battleP.root,
     inv: invP.root,
     quest: questP.root,
     comp: compP.root,
+  };
+  const navBtns = {
+    tech: $('#nav-tech'),
+    battle: $('#nav-battle'),
+    inv: $('#nav-inv'),
+    quest: $('#nav-quest'),
+    comp: $('#nav-comp'),
   };
   const refreshers = {
     tech: renderTechs,
@@ -155,23 +175,22 @@ export function createHUD({ DATA, state, world, audio, rc }) {
     const p = panels[name];
     const willShow = p.classList.contains('hidden');
     Object.values(panels).forEach((x) => x.classList.add('hidden'));
+    Object.values(navBtns).forEach((x) => x.classList.remove('on'));
     if (willShow) {
       p.classList.remove('hidden');
+      navBtns[name].classList.add('on');
       refreshers[name]();
     }
   }
-  $('#t-tech').onclick = () => togglePanel('tech');
-  $('#t-battle').onclick = () => togglePanel('battle');
-  $('#t-inv').onclick = () => togglePanel('inv');
-  $('#t-quest').onclick = () => togglePanel('quest');
-  $('#t-comp').onclick = () => togglePanel('comp');
-  $('#tech-close').onclick = () => $('#panel-tech').classList.add('hidden');
+  for (const [name, btn] of Object.entries(navBtns)) btn.onclick = () => togglePanel(name);
+  $('#tech-close').onclick = () => { $('#panel-tech').classList.add('hidden'); navBtns.tech.classList.remove('on'); };
   $('#t-sound').onclick = (e) => {
     const on = audio.toggle();
-    e.target.textContent = on ? '🔊 Bật' : '🔈 Tắt';
+    e.target.textContent = on ? '🔊' : '🔇';
   };
   const qBtn = $('#t-quality');
-  const syncQ = () => { qBtn.textContent = `Chất lượng: ${({ high: 'Cao', medium: 'Trung', low: 'Thấp' })[rc.presetName()]}`; };
+  const qLabels = { high: '✨', medium: '🌤️', low: '🌥️' };
+  const syncQ = () => { qBtn.textContent = qLabels[rc.presetName()] || '✨'; };
   qBtn.onclick = () => {
     const order = ['low', 'medium', 'high'];
     const next = order[(order.indexOf(rc.presetName()) + 1) % 3];
@@ -182,21 +201,88 @@ export function createHUD({ DATA, state, world, audio, rc }) {
   };
   syncQ();
 
+  // ---- Cinematic độ kiếp: tính năng riêng với animation nhiều nhịp ----
+  let cinematic = false;
+  function runTribulationCine(r) {
+    cinematic = true;
+    const cine = $('#trib-cine');
+    const res = $('#trib-result');
+    res.className = 'hidden';
+    cine.classList.remove('hidden');
+    requestAnimationFrame(() => cine.classList.add('show'));
+    const targetRealm = DATA.realms[Math.min(9, state.realmIdx)].name;
+    cine.querySelector('.trib-sub').innerHTML =
+      `Lôi kiếp <b class="gold-text">${targetRealm}</b> · tỉ lệ vượt qua <b class="trib-odds">${Math.round((r.chance || 0.65) * 100)}%</b>`;
+    const strikeOnce = () => {
+      world.tribulationFx(!r.failed);
+      document.body.classList.add('trib-flash');
+      setTimeout(() => document.body.classList.remove('trib-flash'), 380);
+    };
+    strikeOnce();
+    const s2 = setTimeout(strikeOnce, 2100);
+    setTimeout(() => {
+      clearTimeout(s2);
+      res.className = r.failed ? 'lose' : 'win';
+      res.innerHTML = r.failed
+        ? `ĐỘ KIẾP THẤT BẠI<small>Thiên lôi đánh tan một nửa tu vi.<br>Nâng công pháp, dùng Trúc Cơ Đan rồi thử lại!</small>`
+        : `ĐỘ KIẾP THÀNH CÔNG<small>Chúc mừng tiến vào ${targetRealm}!</small>`;
+      if (!r.failed) world.combatFx();
+      setTimeout(() => {
+        cine.classList.remove('show');
+        setTimeout(() => cine.classList.add('hidden'), 600);
+        cinematic = false;
+        renderTechs();
+      }, 2400);
+    }, 3800);
+  }
+
   $('#btn-bp').onclick = () => {
+    if (cinematic) return;
     const r = doBreakthrough(state, DATA);
     if (!r.ok) return;
     saveState(state);
     if (r.tribulation) {
-      world.tribulationFx(!r.failed);
-      if (r.failed) toast('Độ kiếp thất bại! Thiên lôi đánh tan một nửa tu vi.');
-      else if (r.realmUp) toast(`Độ kiếp thành công! Chúc mừng lên ${realmName(DATA, state.realmIdx)}.`);
+      runTribulationCine(r);
     } else {
       toast(`Đột phá thành công — ${realmName(DATA, state.realmIdx)} tầng ${state.layer}.`);
     }
     renderTechs();
   };
 
-  // Cập nhật số liệu (throttle chữ, bar mượt mỗi frame)
+  // ---- Hướng dẫn tân thủ ----
+  const TUT_STEPS = [
+    { sel: '#tuvi-wrap', title: 'Tu Vi', text: 'Tu vi tự tăng theo thời gian, kể cả khi thoát game (tối đa 8 giờ). Đầy thanh là có thể đột phá.' },
+    { sel: '#btn-bp', title: 'Đột Phá', text: 'Bấm nút vàng để đột phá tầng mới. Mỗi 9 tầng sẽ độ kiếp lên đại cảnh giới — có tỉ lệ thất bại, hãy chuẩn bị kỹ!' },
+    { sel: '#nav-tech', title: 'Công Pháp', text: 'Học và nâng cấp công pháp để tăng tốc độ tu luyện. Công pháp đúng hệ linh căn đạt hiệu quả 100%.' },
+    { sel: '#nav-battle', title: 'Chiến Đấu', text: 'Tự động đánh quái qua ải theo bản đồ. Hạ Boss mỗi 10 ải để rớt pháp bảo tăng sức mạnh.' },
+    { sel: '#nav-quest', title: 'Nhiệm Vụ', text: 'Hoàn thành nhiệm vụ chính tuyến, hằng ngày và thành tựu để nhận thưởng lớn. Đừng bỏ lỡ!' },
+  ];
+  function startTutorial() {
+    const tut = $('#tutorial');
+    let i = 0;
+    const show = () => {
+      root.querySelectorAll('.tut-hl').forEach((x) => x.classList.remove('tut-hl'));
+      const s = TUT_STEPS[i];
+      $('#tut-title').textContent = `${i + 1}. ${s.title}`;
+      $('#tut-text').textContent = s.text;
+      $('#tut-dots').innerHTML = TUT_STEPS.map((_, k) => `<i class="${k === i ? 'on' : ''}"></i>`).join('');
+      $('#tut-next').textContent = i === TUT_STEPS.length - 1 ? 'Bắt đầu tu tiên!' : 'Tiếp theo';
+      const target = root.querySelector(s.sel);
+      if (target) target.classList.add('tut-hl');
+      tut.classList.remove('hidden');
+    };
+    const done = () => {
+      tut.classList.add('hidden');
+      root.querySelectorAll('.tut-hl').forEach((x) => x.classList.remove('tut-hl'));
+      state.flags.tutorialDone = true;
+      saveState(state);
+    };
+    $('#tut-next').onclick = () => { i += 1; if (i >= TUT_STEPS.length) done(); else show(); };
+    $('#tut-skip').onclick = done;
+    show();
+  }
+
+  // Cập nhật số liệu
   let acc = 1;
   function update(dt, rate) {
     const cost = layerCost(state);
@@ -205,29 +291,37 @@ export function createHUD({ DATA, state, world, audio, rc }) {
     if (acc < 0.25) return;
     acc = 0;
     const realm = DATA.realms[state.realmIdx];
-    const badge = $('#realm-badge');
-    badge.querySelector('b').textContent = `${state.name}`;
-    badge.querySelector('b').style.color = realm.color;
-    badge.querySelector('small').textContent = `${realm.name} · tầng ${state.layer}/9`;
+    $('#avatar b').textContent = state.name;
+    const avSmall = $('#avatar small');
+    avSmall.textContent = `${realm.name} · tầng ${state.layer}/9`;
+    avSmall.style.color = realm.color;
     $('#tuvi-text').textContent = `${fmtNum(state.tuVi)} / ${fmtNum(cost)} tu vi`;
-    $('#stat-rate').textContent = `⚡ ${fmtNum(rate)}/s`;
-    $('#stat-el').textContent = `${elName(state.linhCan)} linh căn · 💎${fmtNum(state.linhThach || 0)}`;
+    $('#c-rate').textContent = `⚡${fmtNum(rate)}/s`;
+    $('#c-stone').textContent = `💎${fmtNum(state.linhThach || 0)}`;
     const bp = $('#btn-bp');
     if (isMaxed(state)) {
-      bp.textContent = 'Đã Phi Thăng — vào Đồng hành để chuyển thế';
+      bp.textContent = 'ĐÃ PHI THĂNG';
       bp.disabled = true;
+      bp.classList.remove('trib');
     } else if (canBreakthrough(state)) {
-      bp.textContent = state.layer === 9 ? `ĐỘ KIẾP — lên ${DATA.realms[Math.min(9, state.realmIdx + 1)].name}!` : `ĐỘT PHÁ — tầng ${state.layer + 1}`;
       bp.disabled = false;
+      if (state.layer === 9) {
+        bp.textContent = `⚡ ĐỘ KIẾP — ${DATA.realms[Math.min(9, state.realmIdx + 1)].name}`;
+        bp.classList.add('trib');
+      } else {
+        bp.textContent = `ĐỘT PHÁ — TẦNG ${state.layer + 1}`;
+        bp.classList.remove('trib');
+      }
     } else {
-      bp.textContent = `Đột phá (${fmtNum(state.tuVi)}/${fmtNum(cost)})`;
+      bp.textContent = `${fmtNum(state.tuVi)}/${fmtNum(cost)}`;
       bp.disabled = true;
+      bp.classList.remove('trib');
     }
     if (!panels.battle.classList.contains('hidden')) battleP.update();
   }
 
   return {
-    update, toast, renderTechs,
+    update, toast, renderTechs, startTutorial,
     battleLog: (msg, cls) => battleP.log(msg, cls),
     setRank: (html) => battleP.setRank(html),
     onRankGo: (fn) => battleP.onRankGo(fn),
