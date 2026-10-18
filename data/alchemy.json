@@ -1,0 +1,1 @@
+[{"cost":{"linhThach":50,"linhThao":5},"count":1,"desc":"+50% linh khí/s trong 1 giờ.","output":"tu-linh-dan"},{"cost":{"linhThach":200,"linhThao":12},"count":1,"desc":"+15% tỉ lệ độ kiếp lần tới.","output":"truc-co-dan"},{"cost":{"linhThach":500,"linhThao":25},"count":1,"desc":"Độ kiếp thất bại không mất tu vi.","output":"do-ach-dan"}]
