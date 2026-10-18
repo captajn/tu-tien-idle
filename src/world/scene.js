@@ -24,7 +24,7 @@ export function buildWorld(rc) {
 
   // Trận pháp rune phát sáng tại đài đá giữa tranh (đổi màu theo linh căn)
   const runeMat = new THREE.MeshBasicMaterial({
-    map: runeTexture(256), color: 0xe05a3c, transparent: true, opacity: 0.55,
+    map: runeTexture(256), color: 0xe05a3c, transparent: true, opacity: 0.32,
     depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
   });
   const rune = new THREE.Mesh(new THREE.PlaneGeometry(3.6, 3.6), runeMat);
@@ -78,9 +78,9 @@ export function buildWorld(rc) {
       backdrop.update(dt);
       parts.update(dt, t, rate);
       const sh = trib.update(dt);
-      rune.rotation.z += dt * 0.3;
-      runeMat.opacity = 0.4 + Math.sin(t * 2.2) * 0.15;
-      aura.material.opacity = 0.28 + Math.sin(t * 1.4) * 0.1;
+      rune.rotation.z += dt * 0.12;
+      runeMat.opacity = 0.26 + Math.sin(t * 2.2) * 0.07;
+      aura.material.opacity = 0.2 + Math.sin(t * 1.4) * 0.06;
 
       if (shockT < 1) {
         shockT = Math.min(1, shockT + dt * 2.4);
