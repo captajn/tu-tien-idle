@@ -31,10 +31,45 @@ export function buildSky(scene) {
   scene.background = new THREE.Color(0x070b1a);
   scene.fog = new THREE.Fog(0x070b1a, 48, 175);
 
+  // Vòm trời gradient (đỉnh -> chân trời -> đáy), màu theo giờ thực
+  const skyU = {
+    topColor: { value: new THREE.Color(0x070b1a) },
+    horizonColor: { value: new THREE.Color(0x1a2340) },
+    bottomColor: { value: new THREE.Color(0x04060d) },
+  };
+  const dome = new THREE.Mesh(
+    new THREE.SphereGeometry(420, 24, 16),
+    new THREE.ShaderMaterial({
+      uniforms: skyU,
+      side: THREE.BackSide,
+      depthWrite: false,
+      fog: false,
+      vertexShader: `varying vec3 vDir; void main(){ vDir = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+      fragmentShader: `
+        uniform vec3 topColor; uniform vec3 horizonColor; uniform vec3 bottomColor;
+        varying vec3 vDir;
+        void main(){
+          float h = vDir.y;
+          vec3 col = mix(horizonColor, topColor, smoothstep(0.02, 0.55, h));
+          col = mix(bottomColor, col, smoothstep(-0.4, 0.02, h));
+          col += horizonColor * 0.28 * pow(max(0.0, 1.0 - abs(h)), 6.0);
+          gl_FragColor = vec4(col, 1.0);
+        }`,
+    })
+  );
+  dome.renderOrder = -10;
+  scene.add(dome);
+
   const hemi = new THREE.HemisphereLight(0x2a3a5f, 0x141a28, 0.4);
   scene.add(hemi);
   const sun = new THREE.DirectionalLight(0xffffff, 0.3);
   sun.position.set(60, 80, -40);
+  sun.castShadow = true;
+  sun.shadow.mapSize.set(1024, 1024);
+  sun.shadow.camera.left = -24; sun.shadow.camera.right = 24;
+  sun.shadow.camera.top = 24; sun.shadow.camera.bottom = -24;
+  sun.shadow.camera.near = 10; sun.shadow.camera.far = 260;
+  sun.shadow.bias = -0.0006;
   scene.add(sun);
 
   // Sao
@@ -85,6 +120,9 @@ export function buildSky(scene) {
     update(dt) {
       const k = sampleKeys(now());
       scene.background.copy(k.bg);
+      skyU.topColor.value.copy(k.bg);
+      skyU.horizonColor.value.copy(k.fog).lerp(k.hemi, 0.4);
+      skyU.bottomColor.value.copy(k.bg).multiplyScalar(0.3);
       scene.fog.color.copy(k.fog);
       hemi.color.copy(k.hemi);
       hemi.intensity = k.hemiI;
