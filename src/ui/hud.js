@@ -80,11 +80,11 @@ export function createHUD({ DATA, state, world, audio, rc }) {
     <div id="toast"></div>
     <button id="btn-bp"></button>
     <nav id="navbar">
-      <button class="nav-btn" id="nav-battle"><span class="nav-ic">⚔️</span><span>Chiến đấu</span></button>
-      <button class="nav-btn" id="nav-tech"><span class="nav-ic">📖</span><span>Công pháp</span></button>
-      <button class="nav-btn" id="nav-inv"><span class="nav-ic">🎒</span><span>Túi đồ</span></button>
-      <button class="nav-btn" id="nav-quest"><span class="nav-ic">📜</span><span>Nhiệm vụ</span></button>
-      <button class="nav-btn" id="nav-comp"><span class="nav-ic">🐾</span><span>Đồng hành</span></button>
+      <button class="nav-btn" id="nav-battle"><span class="nav-ic"><img src="./assets/icons/battle.webp" alt="Chiến đấu"></span><span>Chiến đấu</span></button>
+      <button class="nav-btn" id="nav-tech"><span class="nav-ic"><img src="./assets/icons/tech.webp" alt="Công pháp"></span><span>Công pháp</span></button>
+      <button class="nav-btn" id="nav-inv"><span class="nav-ic"><img src="./assets/icons/inv.webp" alt="Túi đồ"></span><span>Túi đồ</span></button>
+      <button class="nav-btn" id="nav-quest"><span class="nav-ic"><img src="./assets/icons/quest.webp" alt="Nhiệm vụ"></span><span>Nhiệm vụ</span></button>
+      <button class="nav-btn" id="nav-comp"><span class="nav-ic"><img src="./assets/icons/comp.webp" alt="Đồng hành"></span><span>Đồng hành</span></button>
     </nav>
     <div id="panel-tech" class="panel hidden"><div class="panel-head"><b>📖 Công pháp</b><button id="tech-close" class="btn small">Đóng</button></div><div id="tech-list"></div></div>
     <div id="trib-cine" class="hidden">

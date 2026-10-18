@@ -107,6 +107,7 @@ body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; color: var
   box-shadow: 0 4px 12px rgba(0,0,0,0.6), inset 0 2px 5px rgba(255,255,255,0.12);
   transition: transform 120ms, box-shadow 120ms;
 }
+.nav-ic img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block; }
 .nav-btn.on { color: #ffe9a8; }
 .nav-btn.on .nav-ic { border-color: var(--gold); box-shadow: 0 0 16px rgba(212,175,55,0.75), inset 0 2px 5px rgba(255,255,255,0.15); }
 .nav-btn:active .nav-ic { transform: scale(0.9); }
