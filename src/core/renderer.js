@@ -8,13 +8,13 @@ export const PRESETS = {
 };
 
 export function createRenderer(container) {
-  const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+  // alpha: nền trong suốt để lộ tranh AI phía dưới (kiến trúc 2.5D)
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
+  renderer.setClearColor(0x000000, 0);
   renderer.setSize(window.innerWidth, window.innerHeight);
-  // Điện ảnh hóa: tone mapping + bóng đổ mềm
+  // Điện ảnh hóa: tone mapping (không còn bóng đổ vì không dựng mesh 3D đặc)
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.12;
-  renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   container.appendChild(renderer.domElement);
 
   const scene = new THREE.Scene();

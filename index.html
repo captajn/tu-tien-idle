@@ -18,6 +18,12 @@
     user-select: none; -webkit-user-select: none; overscroll-behavior: none; }
   #app { position: fixed; inset: 0; touch-action: none; }
   #app canvas { display: block; width: 100%; height: 100%; }
+  #bg { position: fixed; inset: 0; z-index: 0; overflow: hidden; background: #0a0e1c; }
+  #bg img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+    opacity: 0; transition: opacity 4s ease; }
+  #bg img.on { opacity: 1; }
+  .cloud-drift { position: absolute; top: -12%; bottom: -12%; left: 0; right: 0;
+    pointer-events: none; background-repeat: repeat-x; }
   #vignette { position: fixed; inset: 0; z-index: 5; pointer-events: none;
     background: radial-gradient(ellipse at center, transparent 52%, rgba(2,3,10,0.5) 100%); }
   #fade { position: fixed; inset: 0; z-index: 50;
@@ -35,6 +41,13 @@
 </script>
 </head>
 <body>
+<div id="bg">
+  <img id="bg-day" src="./assets/bg-day.jpg" alt="">
+  <img id="bg-sunset" src="./assets/bg-sunset.jpg" alt="">
+  <img id="bg-night" src="./assets/bg-night.jpg" alt="">
+  <div id="cloud-a" class="cloud-drift"></div>
+  <div id="cloud-b" class="cloud-drift"></div>
+</div>
 <div id="app"></div>
 <div id="vignette"></div>
 <div id="fade"><div class="loader-veil"></div><div class="loader">☯<br>Đang dẫn khí nhập thể…</div></div>

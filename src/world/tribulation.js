@@ -9,11 +9,11 @@ export function buildTribulation(scene) {
   const clouds = [];
   for (let i = 0; i < 6; i++) {
     const m = new THREE.Mesh(
-      new THREE.PlaneGeometry(36, 15),
+      new THREE.PlaneGeometry(30, 12),
       new THREE.MeshBasicMaterial({ map: darkTex, transparent: true, depthWrite: false, opacity: 0.95 })
     );
     const a = (i / 6) * Math.PI * 2;
-    m.position.set(Math.cos(a) * 14, 17 + Math.random() * 3, Math.sin(a) * 14);
+    m.position.set(Math.cos(a) * 11, 9.5 + Math.random() * 2, Math.sin(a) * 11);
     m.rotation.y = -a + Math.PI / 2;
     group.add(m);
     clouds.push(m);
@@ -21,7 +21,7 @@ export function buildTribulation(scene) {
   scene.add(group);
 
   const flash = new THREE.PointLight(0xcfe4ff, 0, 70, 1.4);
-  flash.position.set(0, 15, 0);
+  flash.position.set(0, 8, 4);
   scene.add(flash);
 
   let bolts = [];
@@ -30,13 +30,13 @@ export function buildTribulation(scene) {
 
   function addBolt() {
     const pts = [];
-    let x = (Math.random() - 0.5) * 10, y = 18, z = (Math.random() - 0.5) * 10;
+    let x = (Math.random() - 0.5) * 9, y = 12, z = (Math.random() - 0.5) * 7;
     pts.push(new THREE.Vector3(x, y, z));
     for (let i = 0; i < 8; i++) {
-      x += (Math.random() - 0.5) * 3.2;
-      z += (Math.random() - 0.5) * 3.2;
-      y -= 2.1;
-      pts.push(new THREE.Vector3(x, Math.max(y, 1.4), z));
+      x += (Math.random() - 0.5) * 2.8;
+      z += (Math.random() - 0.5) * 2.8;
+      y -= 1.45;
+      pts.push(new THREE.Vector3(x, Math.max(y, 0.6), z));
     }
     const line = new THREE.Line(
       new THREE.BufferGeometry().setFromPoints(pts),

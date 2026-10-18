@@ -15,6 +15,9 @@ npm start           # app desktop (Electron bọc qua scheme app://)
 Không có build step. ES modules thuần + import map (`index.html`), three.js r186 vendored ở `vendor/three/`.
 > BẮT BUỘC: `vendor/three/` phải có đủ **cả hai file** `three.module.js` + `three.core.js` (từ r167 trở đi `three.module.js` import từ `./three.core.js`). Thiếu `three.core.js` → 404 → game kẹt ở màn hình loading. Bài học 18/10/2026: lúc vendor chỉ copy `three.module.js`, phải tải bổ sung `three.core.js` cùng version từ jsdelivr.
 
+## Đồ họa 2.5D (từ 18/10/2026, sau khi Captain chê 3D procedural "í ẹ")
+Nền = tranh AI vẽ tay (`assets/bg-day.jpg`, `bg-sunset.jpg`, `bg-night.jpg`, crossfade theo giờ thực trong `src/world/backdrop.js`) + mây trôi 2 lớp bằng DOM. three.js chỉ vẽ lớp FX trong suốt phía trên: hạt linh khí (`particles.js`), trận pháp rune (`scene.js`), sấm sét độ kiếp (`tribulation.js`), vòng xung kích. Các file `world/sky.js`, `world/island.js`, `world/cultivator.js` đời 3D cũ vẫn còn trên đĩa nhưng không còn được dùng.
+
 ## Kiến trúc
 
 ```

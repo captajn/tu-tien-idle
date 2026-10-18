@@ -1,10 +1,10 @@
-// Ghép toàn bộ world 3D: trời + đảo + tu sĩ + linh khí + thiên kiếp.
+// Lớp FX 2.5D: nền tranh AI (backdrop) + hạt linh khí + trận pháp + thiên kiếp + xung kích.
+// Giữ nguyên interface cũ để main.js không phải sửa.
 import * as THREE from 'three';
-import { buildSky } from './sky.js';
-import { buildIsland } from './island.js';
-import { buildCultivator } from './cultivator.js';
+import { buildBackdrop } from './backdrop.js';
 import { buildParticles } from './particles.js';
 import { buildTribulation } from './tribulation.js';
+import { runeTexture } from './textures.js';
 
 export const ELEMENT_COLORS = {
   kim: 0xd4af37,
@@ -16,13 +16,31 @@ export const ELEMENT_COLORS = {
 
 export function buildWorld(rc) {
   const { scene, camera } = rc;
-  const sky = buildSky(scene);
-  const island = buildIsland();
-  scene.add(island.group);
-  const cult = buildCultivator();
-  scene.add(cult.group);
+  const backdrop = buildBackdrop();
+
   const parts = buildParticles();
+  parts.group.position.set(0, 0.6, 0);
   scene.add(parts.group);
+
+  // Trận pháp rune phát sáng tại đài đá giữa tranh (đổi màu theo linh căn)
+  const runeMat = new THREE.MeshBasicMaterial({
+    map: runeTexture(256), color: 0xe05a3c, transparent: true, opacity: 0.55,
+    depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
+  });
+  const rune = new THREE.Mesh(new THREE.PlaneGeometry(3.6, 3.6), runeMat);
+  rune.rotation.x = -Math.PI / 2;
+  rune.position.set(0, 0.9, 0);
+  scene.add(rune);
+
+  // Quầng hào quang quanh vị trí tu sĩ trong tranh
+  const aura = new THREE.Sprite(new THREE.SpriteMaterial({
+    map: runeMat.map, color: 0xe05a3c, transparent: true, opacity: 0.35,
+    depthWrite: false, blending: THREE.AdditiveBlending,
+  }));
+  aura.scale.set(4.5, 4.5, 1);
+  aura.position.set(0, 2.6, 0);
+  scene.add(aura);
+
   const trib = buildTribulation(scene);
 
   // Vòng xung kích khi hạ yêu thú
@@ -31,38 +49,38 @@ export function buildWorld(rc) {
     new THREE.MeshBasicMaterial({ color: 0xffe9a8, transparent: true, opacity: 0 })
   );
   shock.rotation.x = Math.PI / 2;
-  shock.position.set(0, 1.7, 0.8);
+  shock.position.set(0, 2.2, 0);
   scene.add(shock);
   let shockT = 1;
 
   let t = 0;
-  camera.position.set(13.4, 8.6, 13.4);
-  camera.lookAt(0, 2.6, 0);
+  camera.position.set(0, 3.6, 13);
+  camera.lookAt(0, 2.1, 0);
 
   return {
     setElement(el) {
       const c = ELEMENT_COLORS[el] ?? 0xe05a3c;
-      cult.setElement(c);
       parts.setColor(c);
+      runeMat.color.set(c);
+      aura.material.color.set(c);
     },
     setPreset(p) {
-      // p = { particles, clouds } từ core/renderer PRESETS
       parts.setCount(p.particles);
-      sky.setClouds(p.clouds);
     },
     tribulationFx(success) {
       trib.strike(success);
     },
     combatFx() {
-      shockT = 0; // phát vòng xung kích vàng
+      shockT = 0;
     },
     update(dt, rate) {
       t += dt;
-      island.update(dt, t);
-      cult.update(dt, t, rate);
+      backdrop.update(dt);
       parts.update(dt, t, rate);
-      sky.update(dt);
       const sh = trib.update(dt);
+      rune.rotation.z += dt * 0.3;
+      runeMat.opacity = 0.4 + Math.sin(t * 2.2) * 0.15;
+      aura.material.opacity = 0.28 + Math.sin(t * 1.4) * 0.1;
 
       if (shockT < 1) {
         shockT = Math.min(1, shockT + dt * 2.4);
@@ -73,11 +91,10 @@ export function buildWorld(rc) {
         shock.material.opacity = 0;
       }
 
-      // Camera quay chậm quanh đảo + rung khi có sét
-      const a = t * 0.045, r = 19;
-      const jx = () => (Math.random() - 0.5) * sh * 1.1;
-      camera.position.set(Math.cos(a) * r + jx(), 8.6 + Math.sin(t * 0.13) * 0.5 + jx(), Math.sin(a) * r + jx());
-      camera.lookAt(0, 2.6, 0);
+      // Camera đung đưa rất nhẹ + rung khi có sét
+      const jx = () => (Math.random() - 0.5) * sh * 0.9;
+      camera.position.set(Math.sin(t * 0.1) * 0.35 + jx(), 3.6 + Math.sin(t * 0.23) * 0.15 + jx(), 13);
+      camera.lookAt(0, 2.1, 0);
       rc.render();
     },
   };
